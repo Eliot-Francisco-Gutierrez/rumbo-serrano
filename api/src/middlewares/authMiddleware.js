@@ -1,7 +1,14 @@
 import jwt from 'jsonwebtoken';
 
-// Verificar si el usuario envió un token válido
-export const verificarToken = (req, res, next) => {
+const obtenerSecretoJwt = () => {
+    if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET no está configurado');
+    }
+
+    return process.env.JWT_SECRET;
+};
+
+export const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Formato: "Bearer TOKEN"
 
@@ -10,7 +17,7 @@ export const verificarToken = (req, res, next) => {
     }
 
     try {
-        const verificado = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
+        const verificado = jwt.verify(token, obtenerSecretoJwt());
         req.usuario = verificado; // Guardamos la info del token (id, rol) en la req
         next();
     } catch (error) {
@@ -18,8 +25,7 @@ export const verificarToken = (req, res, next) => {
     }
 };
 
-// Verificar si el usuario tiene rol 'admin'
-export const esAdmin = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
     if (req.usuario && req.usuario.rol === 'admin') {
         next();
     } else {
@@ -35,3 +41,6 @@ export const esAdminUOperador = (req, res, next) => {
         res.status(403).json({ mensaje: 'Acceso restringido: requiere permisos de Administrador u Operador' });
     }
 };
+
+export const verificarToken = verifyToken;
+export const esAdmin = isAdmin;

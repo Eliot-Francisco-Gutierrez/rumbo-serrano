@@ -5,7 +5,7 @@ import { Usuario } from '../models/index.js';
 // REGISTRO DE USUARIO
 export const registrarUsuario = async (req, res) => {
     try {
-        const { nombre_usuario, email, password, nombre, apellido, telefono, rol } = req.body;
+        const { nombre_usuario, email, password, nombre, apellido, telefono } = req.body;
 
         // Verificar si el usuario o email ya existen
         const usuarioExistente = await Usuario.findOne({ where: { email } });
@@ -25,7 +25,7 @@ export const registrarUsuario = async (req, res) => {
             nombre,
             apellido,
             telefono,
-            rol: rol || 'cliente' // Por defecto es cliente
+            rol: 'client'
         });
 
         res.status(201).json({
@@ -62,7 +62,7 @@ export const loginUsuario = async (req, res) => {
         // Generar el Token JWT
         const token = jwt.sign(
             { id: usuario.id, rol: usuario.rol },
-            process.env.JWT_SECRET || 'secret_key',
+            process.env.JWT_SECRET,
             { expiresIn: '8h' }
         );
 

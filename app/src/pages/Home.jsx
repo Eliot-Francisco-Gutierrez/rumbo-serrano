@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export const Home = () => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -41,12 +41,12 @@ export const Home = () => {
     // Cargar Datos de API
     useEffect(() => {
         Promise.all([
-            axios.get('http://localhost:3000/api/categorias'),
-            axios.get('http://localhost:3000/api/actividades')
+            api.get('/categorias'),
+            api.get('/actividades', { params: { limit: 4 } })
         ])
         .then(([resCat, resAct]) => {
             setCategorias(resCat.data);
-            setActividades(resAct.data);
+            setActividades(resAct.data.data || resAct.data);
         })
         .catch(err => console.error('Error al cargar datos en Home:', err));
     }, []);

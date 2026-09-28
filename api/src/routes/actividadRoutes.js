@@ -1,6 +1,7 @@
 import { Router } from 'express';
+import { Op } from 'sequelize';
 import { Actividad, Categoria } from '../models/index.js';
-import { verificarToken, esAdminUOperador } from '../middlewares/authMiddleware.js';
+import { verifyToken, isAdmin } from '../middlewares/authMiddleware.js';
 
 const router = Router();
 
@@ -9,10 +10,36 @@ const router = Router();
 // GET TODAS LAS ACTIVIDADES
 router.get('/', async (req, res) => {
     try {
-        const actividades = await Actividad.findAll({
-            include: Categoria
+        const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1);
+        const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 12, 1), 50);
+        const offset = (page - 1) * limit;
+        const where = {};
+
+        if (req.query.categoria) {
+            where.categoria_id = Number(req.query.categoria);
+        }
+
+        if (req.query.q?.trim()) {
+            const termino = `%${req.query.q.trim()}%`;
+            where[Op.or] = [
+                { titulo: { [Op.like]: termino } },
+                { descripcion: { [Op.like]: termino } },
+                { ubicacion: { [Op.like]: termino } }
+            ];
+        }
+
+        const { rows, count } = await Actividad.findAndCountAll({
+            where,
+            include: Categoria,
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset,
+            distinct: true
         });
-        res.json(actividades);
+        res.json({
+            data: rows,
+            pagination: { page, limit, total: count, totalPages: Math.ceil(count / limit) }
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -34,7 +61,7 @@ router.get('/:id', async (req, res) => {
 // --- RUTAS PROTEGIDAS (Administrador u Operador) ---
 
 // POST (Crear actividad)
-router.post('/', verificarToken, esAdminUOperador, async (req, res) => {
+router.post('/', verifyToken, isAdmin, async (req, res) => {
     try {
         const datos = { ...req.body };
         // Si no llega categoria_id o llega vacío, le asignamos 1 por defecto
@@ -49,7 +76,7 @@ router.post('/', verificarToken, esAdminUOperador, async (req, res) => {
 });
 
 // PUT (Editar actividad)
-router.put('/:id', verificarToken, esAdminUOperador, async (req, res) => {
+router.put('/:id', verifyToken, isAdmin, async (req, res) => {
     try {
         const actividad = await Actividad.findByPk(req.params.id);
         if (!actividad) return res.status(404).json({ mensaje: 'Actividad no encontrada' });
@@ -62,7 +89,7 @@ router.put('/:id', verificarToken, esAdminUOperador, async (req, res) => {
 });
 
 // DELETE (Eliminar actividad)
-router.delete('/:id', verificarToken, esAdminUOperador, async (req, res) => {
+router.delete('/:id', verifyToken, isAdmin, async (req, res) => {
     try {
         const eliminados = await Actividad.destroy({
             where: { id: req.params.id }

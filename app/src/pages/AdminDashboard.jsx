@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -52,11 +52,6 @@ export const AdminDashboard = () => {
         cupo_disponible: 10
     });
 
-    const token = localStorage.getItem('token');
-    const configAuth = {
-        headers: { Authorization: `Bearer ${token}` }
-    };
-
     useEffect(() => {
         cargarActividades();
         cargarUsuarios();
@@ -66,8 +61,8 @@ export const AdminDashboard = () => {
     const cargarActividades = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('http://localhost:3000/api/actividades');
-            setActividades(res.data);
+            const res = await api.get('/actividades', { params: { limit: 50 } });
+            setActividades(res.data.data || res.data);
         } catch (err) {
             console.error("Error al obtener actividades:", err);
         } finally {
@@ -77,7 +72,7 @@ export const AdminDashboard = () => {
 
     const cargarUsuarios = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/usuarios', configAuth);
+            const res = await api.get('/usuarios');
             setUsuarios(res.data);
         } catch (err) {
             console.error("Error al obtener usuarios:", err);
@@ -86,7 +81,7 @@ export const AdminDashboard = () => {
 
     const cargarCategorias = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/categorias');
+            const res = await api.get('/categorias');
             setCategorias(res.data);
         } catch (err) {
             console.error("Error al obtener categorías:", err);
@@ -150,10 +145,10 @@ export const AdminDashboard = () => {
         e.preventDefault();
         try {
             if (modoEdicion) {
-                await axios.put(`http://localhost:3000/api/actividades/${actividadIdEdit}`, formData, configAuth);
+                await api.put(`/actividades/${actividadIdEdit}`, formData);
                 setMensaje({ tipo: 'success', texto: '¡Actividad actualizada correctamente!' });
             } else {
-                await axios.post('http://localhost:3000/api/actividades', formData, configAuth);
+                await api.post('/actividades', formData);
                 setMensaje({ tipo: 'success', texto: '¡Actividad creada con éxito!' });
             }
             setMostrarModal(false);
@@ -169,7 +164,7 @@ export const AdminDashboard = () => {
     const handleEliminar = async (id) => {
         if (window.confirm('¿Deseas eliminar esta actividad?')) {
             try {
-                await axios.delete(`http://localhost:3000/api/actividades/${id}`, configAuth);
+                await api.delete(`/actividades/${id}`);
                 setMensaje({ tipo: 'warning', texto: 'Actividad eliminada.' });
                 cargarActividades();
             } catch (err) {
@@ -209,10 +204,10 @@ export const AdminDashboard = () => {
             };
 
             if (modoEdicionCategoria) {
-                await axios.put(`http://localhost:3000/api/categorias/${categoriaIdEdit}`, payload, configAuth);
+                await api.put(`/categorias/${categoriaIdEdit}`, payload);
                 setMensaje({ tipo: 'success', texto: '¡Categoría actualizada correctamente!' });
             } else {
-                await axios.post('http://localhost:3000/api/categorias', payload, configAuth);
+                await api.post('/categorias', payload);
                 setMensaje({ tipo: 'success', texto: '¡Categoría creada con éxito!' });
             }
             setModalCategoria(false);
@@ -227,7 +222,7 @@ export const AdminDashboard = () => {
     const eliminarCategoria = async (id) => {
         if (window.confirm('¿Deseas eliminar esta categoría?')) {
             try {
-                await axios.delete(`http://localhost:3000/api/categorias/${id}`, configAuth);
+                await api.delete(`/categorias/${id}`);
                 setMensaje({ tipo: 'warning', texto: 'Categoría eliminada.' });
                 cargarCategorias();
             } catch (err) {
@@ -260,7 +255,7 @@ export const AdminDashboard = () => {
         }
 
         try {
-            await axios.put(`http://localhost:3000/api/usuarios/${usuarioEdit.id}/rol`, { rol: nuevoRolSeleccionado }, configAuth);
+            await api.put(`/usuarios/${usuarioEdit.id}/rol`, { rol: nuevoRolSeleccionado });
             setMensaje({ tipo: 'success', texto: '¡Rol de usuario actualizado correctamente!' });
             setModalEditarUsuario(false);
             cargarUsuarios();
@@ -286,7 +281,7 @@ export const AdminDashboard = () => {
 
         if (window.confirm(`¿Deseas eliminar al usuario "${usr.nombre || usr.nombre_usuario || usr.email}"?`)) {
             try {
-                await axios.delete(`http://localhost:3000/api/usuarios/${usr.id}`, configAuth);
+                await api.delete(`/usuarios/${usr.id}`);
                 setMensaje({ tipo: 'warning', texto: 'Usuario eliminado.' });
                 cargarUsuarios();
             } catch (err) {

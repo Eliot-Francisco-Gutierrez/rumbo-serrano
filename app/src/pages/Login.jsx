@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export const Login = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
@@ -18,7 +18,7 @@ export const Login = () => {
         setLoading(true);
 
         try {
-            const res = await axios.post('http://localhost:3000/api/usuarios/login', formData);
+            const res = await api.post('/usuarios/login', formData);
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('usuario', JSON.stringify(res.data.usuario));
             navigate('/home');

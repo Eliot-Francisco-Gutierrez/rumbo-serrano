@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export const Actividades = () => {
     const [actividades, setActividades] = useState([]);
     const [categorias, setCategorias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
+    const [pagina, setPagina] = useState(1);
+    const [paginacion, setPaginacion] = useState(null);
     
     const [searchParams, setSearchParams] = useSearchParams();
     const categoriaSeleccionada = searchParams.get('categoria') || '';
@@ -15,17 +17,22 @@ export const Actividades = () => {
 
     useEffect(() => {
         setLoading(true);
+        const params = { page: pagina, limit: 12 };
+        if (categoriaSeleccionada) params.categoria = categoriaSeleccionada;
+        if (busqueda.trim()) params.q = busqueda.trim();
+
         Promise.all([
-            axios.get('http://localhost:3000/api/actividades'),
-            axios.get('http://localhost:3000/api/categorias')
+            api.get('/actividades', { params }),
+            api.get('/categorias')
         ])
         .then(([resAct, resCat]) => {
-            setActividades(resAct.data);
+            setActividades(resAct.data.data || resAct.data);
+            setPaginacion(resAct.data.pagination || null);
             setCategorias(resCat.data);
         })
         .catch(err => console.error('Error al cargar actividades:', err))
         .finally(() => setLoading(false));
-    }, []);
+    }, [categoriaSeleccionada, pagina, busqueda]);
 
     // Manejo de cambio de filtro de categoría
     const handleCategoriaChange = (idCat) => {
@@ -37,13 +44,7 @@ export const Actividades = () => {
     };
 
     // Filtrar actividades según buscador y categoría seleccionada
-    const actividadesFiltradas = actividades.filter((act) => {
-        const coincideCategoria = !categoriaSeleccionada || String(act.categoria_id) === String(categoriaSeleccionada);
-        const coincideBusqueda = act.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-        act.descripcion?.toLowerCase().includes(busqueda.toLowerCase()) ||
-        act.ubicacion?.toLowerCase().includes(busqueda.toLowerCase());
-        return coincideCategoria && coincideBusqueda;
-    });
+    const actividadesFiltradas = actividades;
 
     return (
         <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', color: '#222222', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -73,7 +74,7 @@ export const Actividades = () => {
                                 style={{ borderRadius: '12px', borderColor: '#E2E8F0', fontSize: '0.9rem', backgroundColor: '#F8FAFC' }}
                                 placeholder="Buscar por título, lugar o descripción..."
                                 value={busqueda}
-                                onChange={(e) => setBusqueda(e.target.value)}
+                                onChange={(e) => { setPagina(1); setBusqueda(e.target.value); }}
                             />
                             {busqueda && (
                                 <button 
@@ -220,6 +221,13 @@ export const Actividades = () => {
                                 </div>
                             );
                         })}
+                    </div>
+                )}
+                {paginacion?.totalPages > 1 && (
+                    <div className="d-flex justify-content-center align-items-center gap-3 mt-4">
+                        <button className="btn btn-outline-dark" disabled={pagina <= 1} onClick={() => setPagina((value) => value - 1)}>Anterior</button>
+                        <span className="text-muted small">Página {pagina} de {paginacion.totalPages}</span>
+                        <button className="btn btn-outline-dark" disabled={pagina >= paginacion.totalPages} onClick={() => setPagina((value) => value + 1)}>Siguiente</button>
                     </div>
                 )}
             </div>

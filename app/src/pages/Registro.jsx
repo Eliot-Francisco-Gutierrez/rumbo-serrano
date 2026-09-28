@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export const Registro = () => {
     const [formData, setFormData] = useState({
@@ -30,7 +30,7 @@ export const Registro = () => {
                 nombre: formData.nombre_usuario
             };
 
-            await axios.post('http://localhost:3000/api/usuarios/registro', dataToSend);
+            await api.post('/usuarios/registro', dataToSend);
 
             alert('¡Usuario registrado con éxito!');
             navigate('/login');

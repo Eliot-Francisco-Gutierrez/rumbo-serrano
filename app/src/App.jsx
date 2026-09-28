@@ -31,7 +31,7 @@ export default function App() {
                 <Route
                 path="/admin"
                 element={
-                    <RutaProtegida rolesPermitidos={['admin', 'operador']}>
+                        <RutaProtegida requiereAdmin>
                         <AdminDashboard />
                     </RutaProtegida>
                 }

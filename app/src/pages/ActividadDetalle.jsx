@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export const ActividadDetalle = () => {
     const { id } = useParams();
@@ -21,7 +21,7 @@ export const ActividadDetalle = () => {
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
     useEffect(() => {
-        axios.get(`http://localhost:3000/api/actividades/${id}`)
+        api.get(`/actividades/${id}`)
             .then((res) => {
                 const data = Array.isArray(res.data) ? res.data[0] : res.data;
                 setActividad(data);
@@ -78,8 +78,8 @@ export const ActividadDetalle = () => {
         setMensaje({ tipo: '', texto: '' });
 
         try {
-            await axios.post(
-                'http://localhost:3000/api/carrito/items',
+            await api.post(
+                '/carrito/items',
                 {
                     actividad_id: actividad.id,
                     cantidad: totalPersonas, // Suma total por compatibilidad
@@ -88,9 +88,6 @@ export const ActividadDetalle = () => {
                     fecha_reserva: fechaSeleccionada,
                     turno: turnoSeleccionado
                 },
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
             );
 
             setMensaje({ tipo: 'success', texto: '¡Actividad agregada al carrito con éxito!' });

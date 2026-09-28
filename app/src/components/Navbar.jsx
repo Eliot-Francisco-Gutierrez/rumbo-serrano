@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export const Navbar = () => {
     const navigate = useNavigate();
@@ -18,9 +18,7 @@ export const Navbar = () => {
         }
 
         try {
-            const res = await axios.get('http://localhost:3000/api/carrito', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await api.get('/carrito');
             const items = res.data?.ItemCarritos || [];
             
             // Sumamos la cantidad total de ítems
@@ -38,7 +36,7 @@ export const Navbar = () => {
     }, [location.pathname]);
 
     // Permitir acceso al panel a administradores y operadores
-    const puedeAccederPanel = usuario && (usuario.rol === 'admin' || usuario.rol === 'operador');
+    const puedeAccederPanel = usuario?.rol === 'admin';
 
     const handleLogout = () => {
         localStorage.removeItem('token');

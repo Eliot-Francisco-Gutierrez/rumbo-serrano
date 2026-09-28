@@ -7,7 +7,7 @@ import {
     eliminarUsuario 
 } from '../controllers/usuarioController.js';
 import { Usuario } from '../models/index.js';
-import { verificarToken, esAdmin } from '../middlewares/authMiddleware.js';
+import { verifyToken, isAdmin } from '../middlewares/authMiddleware.js';
 
 const router = Router();
 
@@ -18,11 +18,16 @@ router.post('/login', loginUsuario);
 // --- RUTAS PROTEGIDAS (Solo Administrador) ---
 
 // GET TODOS LOS USUARIOS
-router.get('/', verificarToken, esAdmin, obtenerUsuarios);
+router.get('/', verifyToken, isAdmin, obtenerUsuarios);
 
 // GET POR ID
-router.get('/:id', verificarToken, async (req, res) => {
+router.get('/:id', verifyToken, async (req, res) => {
     try {
+        const esPropietario = req.usuario.id === Number(req.params.id);
+        if (!esPropietario && req.usuario.rol !== 'admin') {
+            return res.status(403).json({ mensaje: 'No tienes permisos para consultar este usuario' });
+        }
+
         const usuario = await Usuario.findByPk(req.params.id, {
             attributes: { exclude: ['password'] }
         });
@@ -34,15 +39,24 @@ router.get('/:id', verificarToken, async (req, res) => {
 });
 
 // PUT (Editar datos generales de un usuario)
-router.put('/:id', verificarToken, async (req, res) => {
+router.put('/:id', verifyToken, async (req, res) => {
     try {
+        const esPropietario = req.usuario.id === Number(req.params.id);
+        if (!esPropietario && req.usuario.rol !== 'admin') {
+            return res.status(403).json({ mensaje: 'No tienes permisos para editar este usuario' });
+        }
+
         const usuario = await Usuario.findByPk(req.params.id);
         if (!usuario) return res.status(404).json({ mensaje: 'Usuario no encontrado' });
 
-        // Evita modificar directamente la contraseña desde esta ruta común
-        delete req.body.password;
+        const camposPermitidos = ['nombre_usuario', 'nombre', 'apellido', 'telefono', 'email'];
+        const datosActualizados = Object.fromEntries(
+            camposPermitidos
+                .filter((campo) => req.body[campo] !== undefined)
+                .map((campo) => [campo, req.body[campo]])
+        );
 
-        await usuario.update(req.body);
+        await usuario.update(datosActualizados);
         res.json({ mensaje: 'Usuario actualizado', usuario });
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -50,9 +64,9 @@ router.put('/:id', verificarToken, async (req, res) => {
 });
 
 // PUT (Cambiar ROL de usuario - Solo Administrador)
-router.put('/:id/rol', verificarToken, esAdmin, cambiarRol);
+router.put('/:id/rol', verifyToken, isAdmin, cambiarRol);
 
 // DELETE (Eliminar usuario - Solo Administrador)
-router.delete('/:id', verificarToken, esAdmin, eliminarUsuario);
+router.delete('/:id', verifyToken, isAdmin, eliminarUsuario);
 
 export default router;

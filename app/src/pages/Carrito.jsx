@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export const Carrito = () => {
     const navigate = useNavigate();
@@ -28,9 +28,7 @@ export const Carrito = () => {
         }
 
         try {
-            const res = await axios.get('http://localhost:3000/api/carrito', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await api.get('/carrito');
             setCarrito(res.data);
             setLoading(false);
         } catch (error) {
@@ -45,9 +43,7 @@ export const Carrito = () => {
 
     const handleEliminarItem = async (itemId) => {
         try {
-            await axios.delete(`http://localhost:3000/api/carrito/items/${itemId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/carrito/items/${itemId}`);
             cargarCarrito();
         } catch (error) {
             console.error("Error al eliminar el ítem:", error);
@@ -66,14 +62,11 @@ export const Carrito = () => {
         setMensaje({ tipo: '', texto: '' });
 
         try {
-            const response = await axios.post(
-                'http://localhost:3000/api/reservas/checkout',
+            const response = await api.post(
+                '/reservas/checkout',
                 {
                     telefono: datosContacto.telefono,
                     email: datosContacto.email
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` }
                 }
             );
 

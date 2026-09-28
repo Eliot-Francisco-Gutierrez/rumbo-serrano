@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 const Reservas = () => {
     const navigate = useNavigate();
@@ -19,10 +19,7 @@ const Reservas = () => {
 
     const obtenerReservas = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:3000/api/reservas/mis-reservas', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/reservas/mis-reservas');
             setReservas(response.data);
             setCargando(false);
         } catch (err) {
@@ -40,10 +37,7 @@ const Reservas = () => {
         if (!window.confirm('¿Estás seguro de que deseas cancelar esta reserva?')) return;
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:3000/api/reservas/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/reservas/${id}`);
             setReservas(reservas.filter(reserva => reserva.id !== id));
         } catch (err) {
             console.error("Error al cancelar:", err);
@@ -64,10 +58,7 @@ const Reservas = () => {
 
     const handleGuardarEdicion = async (id) => {
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:3000/api/reservas/${id}`, formEdicion, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.put(`/reservas/${id}`, formEdicion);
             setReservaEditando(null);
             obtenerReservas();
         } catch (err) {
