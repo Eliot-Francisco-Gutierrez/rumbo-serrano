@@ -87,3 +87,27 @@ export const eliminarItem = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const actualizarCantidad = async (req, res) => {
+    try {
+        const cantidad = Number(req.body.cantidad);
+        if (!Number.isInteger(cantidad) || cantidad < 1) {
+            return res.status(400).json({ mensaje: 'La cantidad debe ser un entero mayor a cero' });
+        }
+
+        const carrito = await Carrito.findOne({ where: { usuario_id: req.usuario.id } });
+        const item = carrito && await ItemCarrito.findOne({
+            where: { id: req.params.id, carrito_id: carrito.id },
+            include: [Actividad]
+        });
+
+        if (!item) {
+            return res.status(404).json({ mensaje: 'Ítem no encontrado' });
+        }
+
+        await item.update({ cantidad });
+        return res.json(item);
+    } catch (error) {
+        return res.status(500).json({ mensaje: 'No se pudo actualizar la cantidad' });
+    }
+};

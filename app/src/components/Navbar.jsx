@@ -1,39 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import api from '../services/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 export const Navbar = () => {
     const navigate = useNavigate();
-    const location = useLocation();
     const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
-    const token = localStorage.getItem('token');
-
-    const [cantidadCarrito, setCantidadCarrito] = useState(0);
-
-    // Función para obtener la cantidad actual de ítems en el carrito
-    const obtenerCantidadCarrito = async () => {
-        if (!token) {
-            setCantidadCarrito(0);
-            return;
-        }
-
-        try {
-            const res = await api.get('/carrito');
-            const items = res.data?.ItemCarritos || [];
-            
-            // Sumamos la cantidad total de ítems
-            const totalItems = items.reduce((acc, item) => acc + (item.cantidad || 1), 0);
-            setCantidadCarrito(totalItems);
-        } catch (error) {
-            console.error("Error al obtener items del carrito:", error);
-            setCantidadCarrito(0);
-        }
-    };
-
-    // Actualizamos el contador cada vez que cambia la ruta en la aplicación
-    useEffect(() => {
-        obtenerCantidadCarrito();
-    }, [location.pathname]);
+    const { totalQuantity, clearCart } = useCart();
 
     // Permitir acceso al panel a administradores y operadores
     const puedeAccederPanel = usuario?.rol === 'admin';
@@ -41,7 +12,7 @@ export const Navbar = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
-        setCantidadCarrito(0);
+        clearCart();
         navigate('/login');
     };
 
@@ -107,6 +78,13 @@ export const Navbar = () => {
                     >
                         Reservas
                     </Link>
+                    <Link
+                        to="/pedidos"
+                        className="text-decoration-none text-white-50 hover-white"
+                        style={{ transition: 'color 0.2s ease' }}
+                    >
+                        Pedidos
+                    </Link>
                 </div>
 
                 {/* Sección de Usuario / Acceso */}
@@ -120,12 +98,12 @@ export const Navbar = () => {
                         style={{ width: '38px', height: '38px', backgroundColor: '#242424' }}
                     >
                         🛒
-                        {cantidadCarrito > 0 && (
+                        {totalQuantity > 0 && (
                             <span 
                                 className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                                 style={{ fontSize: '0.65rem' }}
                             >
-                                {cantidadCarrito}
+                                {totalQuantity}
                             </span>
                         )}
                     </Link>

@@ -29,4 +29,4 @@ export const Usuario = sequelize.define('Usuario', {
     type: DataTypes.ENUM('client', 'cliente', 'admin', 'operador'),
     defaultValue: 'client'
   }
-}, { tableName: 'usuarios' });
+}, { tableName: 'usuario' });

@@ -27,4 +27,4 @@ export const ItemCarrito = sequelize.define('ItemCarrito', {
     type: DataTypes.STRING, // Guarda 'Mañana', 'Tarde' o un horario específico como '10:00 hs'
     allowNull: true
   }
-}, { tableName: 'items_carrito' });
+}, { tableName: 'item_carrito' });

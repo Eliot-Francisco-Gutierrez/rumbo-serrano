@@ -16,4 +16,4 @@ export const Categoria = sequelize.define('Categoria', {
     type: DataTypes.TEXT,
     allowNull: true
   }
-}, { tableName: 'categorias' });
+}, { tableName: 'categoria' });

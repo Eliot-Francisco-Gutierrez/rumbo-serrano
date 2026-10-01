@@ -3,28 +3,39 @@ import nodemailer from 'nodemailer';
 // Sanitizado de variables de entorno para evitar errores de espacios invisibles
 const user = (process.env.EMAIL_USER || '').trim();
 const pass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
+const emailConfigurado = Boolean(user && pass);
 
-export const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Forzar conexión SSL segura
-    auth: {
-        user: (process.env.EMAIL_USER || '').trim(),
-        pass: (process.env.EMAIL_PASS || '').replace(/\s+/g, '')
-    }
-});
+export const transporter = emailConfigurado
+    ? nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user, pass }
+    })
+    : null;
 
 // Método de verificación para comprobar la autenticación SMTP al arrancar la app
 export const verificarConexionEmail = async () => {
+    if (!emailConfigurado) {
+        console.warn('⚠️ Email no configurado: se omitirán las confirmaciones por correo.');
+        return false;
+    }
+
     try {
         await transporter.verify();
         console.log('✅ Servidor de correo de Gmail autenticado y listo.');
+        return true;
     } catch (error) {
         console.error('❌ Error de autenticación en Nodemailer/Gmail:', error.message);
+        return false;
     }
 };
 
 export const enviarEmailConfirmacion = async (destinatario, datosReserva) => {
+    if (!transporter) {
+        return null;
+    }
+
     const { 
         id, 
         total, 

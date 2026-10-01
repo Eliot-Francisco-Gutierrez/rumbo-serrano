@@ -3,7 +3,8 @@
     import {
     obtenerCarrito,
     agregarItem,
-    eliminarItem
+    eliminarItem,
+    actualizarCantidad
     } from '../controllers/carritoController.js';
 
     const router = Router();
@@ -13,6 +14,9 @@
 
     // POST: Agregar ítem al carrito
     router.post('/items', verificarToken, agregarItem);
+
+    // PUT: Actualizar cantidad de un ítem propio
+    router.put('/items/:id', verificarToken, actualizarCantidad);
 
     // DELETE: Eliminar ítem del carrito
     router.delete('/items/:id', verificarToken, eliminarItem);

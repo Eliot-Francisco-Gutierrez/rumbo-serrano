@@ -1,13 +1,13 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/database.js';
 
-export const DetalleReserva = sequelize.define('DetalleReserva', {
+export const OrderItem = sequelize.define('OrderItem', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-  reserva_id: {
+  order_id: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
@@ -21,6 +21,15 @@ export const DetalleReserva = sequelize.define('DetalleReserva', {
   },
   cantidad: {
     type: DataTypes.INTEGER,
-    defaultValue: 1
+    allowNull: false,
+    validate: { min: 1 }
+  },
+  fecha_reserva: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  turno: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
-}, { tableName: 'detalle_reserva' });
+}, { tableName: 'order_items' });

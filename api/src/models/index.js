@@ -6,6 +6,8 @@ import { Carrito } from './Carrito.js';
 import { ItemCarrito } from './ItemCarrito.js';
 import { Reserva } from './Reserva.js';
 import { DetalleReserva } from './DetalleReserva.js';
+import { Order } from './Order.js';
+import { OrderItem } from './OrderItem.js';
 
 // Categoria <-> Actividad
 Categoria.hasMany(Actividad, { foreignKey: 'categoria_id' });
@@ -31,6 +33,14 @@ DetalleReserva.belongsTo(Reserva, { foreignKey: 'reserva_id' });
 Actividad.hasMany(DetalleReserva, { foreignKey: 'actividad_id' });
 DetalleReserva.belongsTo(Actividad, { foreignKey: 'actividad_id' });
 
+// Usuario <-> Order <-> OrderItem <-> Actividad
+Usuario.hasMany(Order, { foreignKey: 'usuario_id' });
+Order.belongsTo(Usuario, { foreignKey: 'usuario_id' });
+Order.hasMany(OrderItem, { foreignKey: 'order_id' });
+OrderItem.belongsTo(Order, { foreignKey: 'order_id' });
+Actividad.hasMany(OrderItem, { foreignKey: 'actividad_id' });
+OrderItem.belongsTo(Actividad, { foreignKey: 'actividad_id' });
+
 export { 
   sequelize, 
   Usuario, 
@@ -39,5 +49,7 @@ export {
   Carrito, 
   ItemCarrito, 
   Reserva, 
-  DetalleReserva 
+  DetalleReserva,
+  Order,
+  OrderItem
 };

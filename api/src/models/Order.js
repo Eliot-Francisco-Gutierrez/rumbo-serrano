@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/database.js';
 
-export const Reserva = sequelize.define('Reserva', {
+export const Order = sequelize.define('Order', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -11,16 +11,22 @@ export const Reserva = sequelize.define('Reserva', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  fecha_reserva: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+  telefono: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: { isEmail: true }
   },
   total: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
   estado: {
-    type: DataTypes.ENUM('pendiente', 'confirmada', 'cancelada'),
-    defaultValue: 'pendiente'
+    type: DataTypes.ENUM('confirmada', 'cancelada'),
+    allowNull: false,
+    defaultValue: 'confirmada'
   }
-}, { tableName: 'reserva' });
+}, { tableName: 'orders' });

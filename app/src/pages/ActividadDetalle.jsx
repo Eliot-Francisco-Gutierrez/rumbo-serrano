@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useCart } from '../context/CartContext';
 
 export const ActividadDetalle = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { refreshCart } = useCart();
 
     const [actividad, setActividad] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -89,6 +91,7 @@ export const ActividadDetalle = () => {
                     turno: turnoSeleccionado
                 },
             );
+            await refreshCart();
 
             setMensaje({ tipo: 'success', texto: '¡Actividad agregada al carrito con éxito!' });
             setAgregando(false);
